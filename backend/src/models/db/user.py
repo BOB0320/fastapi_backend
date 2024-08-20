@@ -11,15 +11,22 @@ class User(Base):  # type: ignore
     __tablename__ = "user"
 
     id: SQLAlchemyMapped[int] = sqlalchemy_mapped_column(primary_key=True, autoincrement="auto")
+    email: SQLAlchemyMapped[str] = sqlalchemy_mapped_column(sqlalchemy.String(length=64), nullable=False, unique=True)
     username: SQLAlchemyMapped[str] = sqlalchemy_mapped_column(
         sqlalchemy.String(length=64), nullable=False, unique=True
     )
-    email: SQLAlchemyMapped[str] = sqlalchemy_mapped_column(sqlalchemy.String(length=64), nullable=False, unique=True)
-    _hashed_password: SQLAlchemyMapped[str] = sqlalchemy_mapped_column(sqlalchemy.String(length=1024), nullable=True)
-    _hash_salt: SQLAlchemyMapped[str] = sqlalchemy_mapped_column(sqlalchemy.String(length=1024), nullable=True)
-    is_verified: SQLAlchemyMapped[bool] = sqlalchemy_mapped_column(sqlalchemy.Boolean, nullable=False, default=False)
+    first_name: SQLAlchemyMapped[str] = sqlalchemy_mapped_column(
+        sqlalchemy.String(length=64), nullable=True, unique=False
+    )
+    last_name: SQLAlchemyMapped[str] = sqlalchemy_mapped_column(
+        sqlalchemy.String(length=64), nullable=True, unique=False
+    )
+    roles: SQLAlchemyMapped[int] = sqlalchemy_mapped_column(sqlalchemy.Integer, nullable=False, default=0)
+    auth_id: SQLAlchemyMapped[str] = sqlalchemy_mapped_column(sqlalchemy.String(length=64), nullable=False, unique=True)
+    is_onboarding: SQLAlchemyMapped[bool] = sqlalchemy_mapped_column(sqlalchemy.Boolean, nullable=False, default=True)
     is_active: SQLAlchemyMapped[bool] = sqlalchemy_mapped_column(sqlalchemy.Boolean, nullable=False, default=False)
     is_logged_in: SQLAlchemyMapped[bool] = sqlalchemy_mapped_column(sqlalchemy.Boolean, nullable=False, default=False)
+    last_login: SQLAlchemyMapped[datetime.date] = sqlalchemy_mapped_column(sqlalchemy.DateTime(timezone=True), nullable=True)
     created_at: SQLAlchemyMapped[datetime.datetime] = sqlalchemy_mapped_column(
         sqlalchemy.DateTime(timezone=True), nullable=False, server_default=sqlalchemy_functions.now()
     )
@@ -30,17 +37,3 @@ class User(Base):  # type: ignore
     )
 
     __mapper_args__ = {"eager_defaults": True}
-
-    @property
-    def hashed_password(self) -> str:
-        return self._hashed_password
-
-    def set_hashed_password(self, hashed_password: str) -> None:
-        self._hashed_password = hashed_password
-
-    @property
-    def hash_salt(self) -> str:
-        return self._hash_salt
-
-    def set_hash_salt(self, hash_salt: str) -> None:
-        self._hash_salt = hash_salt
