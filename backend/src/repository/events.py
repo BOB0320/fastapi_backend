@@ -25,22 +25,10 @@ def inspect_db_server_on_close(
     loguru.logger.info(f"Closed Connection Record ---\n {connection_record}")
 
 
-async def initialize_db_tables(connection: AsyncConnection) -> None:
-    loguru.logger.info("Database Table Creation --- Initializing . . .")
-
-    # await connection.run_sync(Base.metadata.drop_all)
-    await connection.run_sync(Base.metadata.create_all, checkfirst=True)
-
-    loguru.logger.info("Database Table Creation --- Successfully Initialized!")
-
-
 async def initialize_db_connection(backend_app: fastapi.FastAPI) -> None:
     loguru.logger.info("Database Connection --- Establishing . . .")
 
     backend_app.state.db = async_db
-
-    # async with backend_app.state.db.async_engine.begin() as connection:
-    #     await initialize_db_tables(connection=connection)
 
     loguru.logger.info("Database Connection --- Successfully Established!")
 
