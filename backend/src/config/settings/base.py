@@ -71,7 +71,6 @@ class BackendBaseSettings(BaseSettings):
         case_sensitive: bool = True
         env_file: str = f"{str(ROOT_DIR)}/.env"
         extra = 'allow'
-        print("----------------", env_file)
         validate_assignment: bool = True
 
     @property
