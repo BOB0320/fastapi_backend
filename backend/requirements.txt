@@ -27,3 +27,5 @@ pytest-xdist
 SQLAlchemy
 trio
 uvicorn
+pydantic-settings
+psycopg2
