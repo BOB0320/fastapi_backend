@@ -55,6 +55,8 @@ class BackendBaseSettings(BaseSettings):
     ALLOWED_ORIGINS: list[str] = [
         "http://localhost:3000",  # React default port
         "http://0.0.0.0:3000",
+        "http://0.0.0.0:8000",
+        "http:/localhost:8000",
     ]
     ALLOWED_METHODS: list[str] = ["*"]
     ALLOWED_HEADERS: list[str] = ["*"]
