@@ -13,4 +13,4 @@ class BaseSchemaModel(pydantic.BaseModel):
         validate_assignment: bool = False
         allow_population_by_field_name: bool = True
         json_encoders: dict = {datetime.datetime: format_datetime_into_isoformat}
-        alias_generator: typing.Any = format_dict_key_to_camel_case
+        # alias_generator: typing.Any = format_dict_key_to_camel_case
