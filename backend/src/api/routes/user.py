@@ -33,7 +33,6 @@ async def create_user(
         await user_repo.is_email_taken(email=user_create.email)
         new_user = await user_repo.create_user(user_create=user_create)
     except EntityAlreadyExists:
-        print("asdfajshdfk")
         raise await http_400_exc_bad_email_request(user_create.email)
     return UserInResponse(
         id=new_user.id,
