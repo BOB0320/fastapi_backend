@@ -14,7 +14,7 @@ from src.repository.database import async_db
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
 config = context.config
-config.set_main_option(name="sqlalchemy.url", value=str(async_db.postgres_uri))
+config.set_main_option(name="sqlalchemy.url", value="postgresql://neondb_owner:XKriQqRP5AI9@ep-purple-voice-a5a158vv.us-east-2.aws.neon.tech/neondb")
 
 # Interpret the config file for Python logging.
 # This line sets up loggers basically.
