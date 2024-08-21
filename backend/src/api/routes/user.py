@@ -28,15 +28,12 @@ async def create_user(
     user_create: UserInCreate,
     user_repo: UserCRUDRepository = fastapi.Depends(get_repository(repo_type=UserCRUDRepository)),
 ) -> UserInResponse:
-    print("-------------------")
-    
     # try:
     #     await user_repo.is_email_taken(email=user_create.email)
     # except EntityDoesNotExist:
     #     raise await http_exc_400_credentials_bad_signup_request()
     print("====================")
     new_user = await user_repo.create_user(user_create=user_create)
-    print("ddddddddddddddddd",new_user)
     return UserInResponse(
         id=new_user.id,
         email=new_user.email,

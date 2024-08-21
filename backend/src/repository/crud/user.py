@@ -27,9 +27,9 @@ class UserCRUDRepository(BaseCRUDRepository):
             )
             loguru.logger.info(new_user)
             print(self.async_session,"asdfasdffsadf", new_user)
-            # self.async_session.add(instance=new_user)
-            # await self.async_session.commit()
-            # await self.async_session.refresh(instance=new_user)
+            self.async_session.add(instance=new_user)
+            await self.async_session.commit()
+            await self.async_session.refresh(instance=new_user)
 
             return new_user
         except Exception as e:
