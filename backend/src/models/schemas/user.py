@@ -42,3 +42,6 @@ class UserInResponse(BaseSchemaModel):
     last_login: Optional[datetime.datetime]
     created_at: datetime.datetime
     updated_at: Optional[datetime.datetime]
+
+class UserOnboardingUpdate(BaseSchemaModel):
+    onboarding: bool

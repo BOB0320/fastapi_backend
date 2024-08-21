@@ -1,10 +1,11 @@
 import datetime
 
 import sqlalchemy
-from sqlalchemy.orm import Mapped as SQLAlchemyMapped, mapped_column as sqlalchemy_mapped_column
+from sqlalchemy.orm import Mapped as SQLAlchemyMapped, mapped_column as sqlalchemy_mapped_column, relationship
 from sqlalchemy.sql import functions as sqlalchemy_functions
 
 from src.repository.table import Base
+from src.models.db.onboarding import Onboarding
 
 
 class User(Base):  # type: ignore
@@ -35,5 +36,8 @@ class User(Base):  # type: ignore
         nullable=True,
         server_onupdate=sqlalchemy.schema.FetchedValue(for_update=True),
     )
+    
+    # One-to-One relationship with Onboarding
+    onboarding = relationship("Onboarding", back_populates="user")
 
     __mapper_args__ = {"eager_defaults": True}
