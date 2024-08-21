@@ -6,8 +6,6 @@ from sqlalchemy.sql import functions as sqlalchemy_functions
 from src.models.db.user import User
 from src.models.schemas.user import UserInCreate
 from src.repository.crud.base import BaseCRUDRepository
-from src.securities.hashing.password import pwd_generator
-from src.securities.verifications.credentials import credential_verifier
 from src.utilities.exceptions.database import EntityAlreadyExists, EntityDoesNotExist
 from src.utilities.exceptions.password import PasswordDoesNotMatch
 
@@ -39,7 +37,7 @@ class UserCRUDRepository(BaseCRUDRepository):
         email_query = await self.async_session.execute(email_stmt)
         db_email = email_query.scalar()
 
-        if not credential_verifier.is_email_available(email=db_email):
-            raise EntityAlreadyExists(f"The email `{email}` is already registered!")  # type: ignore
+        # if not credential_verifier.is_email_available(email=db_email):
+        #     raise EntityAlreadyExists(f"The email `{email}` is already registered!")  # type: ignore
 
         return True

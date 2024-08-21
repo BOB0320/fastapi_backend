@@ -27,15 +27,6 @@ class BackendBaseSettings(BaseSettings):
 
     DB_ASYNC_URL: str = decouple.config("DB_ASYNC_URL", cast=str)  # type: ignore
 
-    API_TOKEN: str = decouple.config("API_TOKEN", cast=str)  # type: ignore
-    AUTH_TOKEN: str = decouple.config("AUTH_TOKEN", cast=str)  # type: ignore
-    JWT_TOKEN_PREFIX: str = decouple.config("JWT_TOKEN_PREFIX", cast=str)  # type: ignore
-    JWT_SECRET_KEY: str = decouple.config("JWT_SECRET_KEY", cast=str)  # type: ignore
-    JWT_SUBJECT: str = decouple.config("JWT_SUBJECT", cast=str)  # type: ignore
-    JWT_MIN: int = decouple.config("JWT_MIN", cast=int)  # type: ignore
-    JWT_HOUR: int = decouple.config("JWT_HOUR", cast=int)  # type: ignore
-    JWT_DAY: int = decouple.config("JWT_DAY", cast=int)  # type: ignore
-    JWT_ACCESS_TOKEN_EXPIRATION_TIME: int = JWT_MIN * JWT_HOUR * JWT_DAY
 
     IS_ALLOWED_CREDENTIALS: bool = decouple.config("IS_ALLOWED_CREDENTIALS", cast=bool)  # type: ignore
     ALLOWED_ORIGINS: list[str] = [
@@ -50,10 +41,6 @@ class BackendBaseSettings(BaseSettings):
     LOGGING_LEVEL: int = logging.INFO
     LOGGERS: tuple[str, str] = ("uvicorn.asgi", "uvicorn.access")
 
-    HASHING_ALGORITHM_LAYER_1: str = decouple.config("HASHING_ALGORITHM_LAYER_1", cast=str)  # type: ignore
-    HASHING_ALGORITHM_LAYER_2: str = decouple.config("HASHING_ALGORITHM_LAYER_2", cast=str)  # type: ignore
-    HASHING_SALT: str = decouple.config("HASHING_SALT", cast=str)  # type: ignore
-    JWT_ALGORITHM: str = decouple.config("JWT_ALGORITHM", cast=str)  # type: ignore
 
     class Config(BaseConfig):
         case_sensitive: bool = True
