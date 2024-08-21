@@ -5,7 +5,7 @@ from src.api.dependencies.repository import get_repository
 from src.models.schemas.user import UserInResponse, UserInCreate
 from src.models.db.user import User
 from src.repository.crud.user import UserCRUDRepository
-from src.utilities.exceptions.database import EntityDoesNotExist, EntityAlreadyExists
+from src.utilities.exceptions.database import EmailAlreadyExists, UsernameAlreadyExists
 from src.utilities.exceptions.http.exc_404 import (
     http_404_exc_email_not_found_request,
     http_404_exc_id_not_found_request,
@@ -14,7 +14,8 @@ from src.utilities.exceptions.http.exc_404 import (
 from src.utilities.exceptions.http.exc_400 import (
     http_exc_400_credentials_bad_signin_request,
     http_exc_400_credentials_bad_signup_request,
-    http_400_exc_bad_email_request
+    http_400_exc_bad_email_request,
+    http_400_exc_bad_username_request
 )
 
 router = fastapi.APIRouter(prefix="/users", tags=["users"])
@@ -31,9 +32,13 @@ async def create_user(
 ) -> UserInResponse:
     try:
         await user_repo.is_email_taken(email=user_create.email)
+        await user_repo.is_username_taken(username=user_create.username)
         new_user = await user_repo.create_user(user_create=user_create)
-    except EntityAlreadyExists:
-        raise await http_400_exc_bad_email_request(user_create.email)
+    except EmailAlreadyExists:
+        raise await http_400_exc_bad_email_request(email=user_create.email)
+    except UsernameAlreadyExists:
+        raise await http_400_exc_bad_username_request(username=user_create.username)
+    
     return UserInResponse(
         id=new_user.id,
         email=new_user.email,

@@ -6,22 +6,13 @@ from sqlalchemy.sql import functions as sqlalchemy_functions
 from src.models.db.user import User
 from src.models.schemas.user import UserInCreate
 from src.repository.crud.base import BaseCRUDRepository
-from src.utilities.exceptions.database import EntityAlreadyExists, EntityDoesNotExist
+from src.utilities.exceptions.database import EmailAlreadyExists, UsernameAlreadyExists
 from src.utilities.exceptions.password import PasswordDoesNotMatch
 
 
 class UserCRUDRepository(BaseCRUDRepository):
     async def create_user(self, user_create: UserInCreate) -> User:
-        new_user = User(
-            email=user_create.email, 
-            username=user_create.username, 
-            first_name=user_create.first_name, 
-            last_name=user_create.last_name, 
-            roles=0,
-            is_onboarding=True,
-            is_active=False,
-            is_logged_in=False
-        )
+        new_user = User(**user_create.dict())
         self.async_session.add(instance=new_user)
         await self.async_session.commit()
         await self.async_session.refresh(instance=new_user)
@@ -32,7 +23,13 @@ class UserCRUDRepository(BaseCRUDRepository):
         email_query = await self.async_session.execute(email_stmt)
         db_email = email_query.scalar()
 
-        # if not credential_verifier.is_email_available(email=db_email):
-        #     raise EntityAlreadyExists(f"The email `{email}` is already registered!")  # type: ignore
+        if db_email:
+            raise EmailAlreadyExists(f"The email `{email}` is already registered!")
+        
+    async def is_username_taken(self, username: str) -> bool:
+        username_stmt = sqlalchemy.select(User.username).select_from(User).where(User.username == username)
+        username_query = await self.async_session.execute(username_stmt)
+        db_username = username_query.scalar()
 
-        return True
+        if db_username:
+            raise UsernameAlreadyExists(f"The username `{username}` is already taken!")  # type: ignore
