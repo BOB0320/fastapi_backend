@@ -1,10 +1,10 @@
-from src.config import dbsettings
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
+from src.config.manager import settings
 
-
+print(settings.DB_ASYNC_URL)
 engine = create_async_engine(
-    "postgresql+asyncpg://neondb_owner:XKriQqRP5AI9@ep-purple-voice-a5a158vv.us-east-2.aws.neon.tech/neondb",
+    url=settings.DB_ASYNC_URL,
     echo=False,
     future=True,
     pool_size=max(5, 10),

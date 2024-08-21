@@ -2,19 +2,15 @@ from logging.config import fileConfig
 
 from sqlalchemy import engine_from_config
 from sqlalchemy import pool
-
 from alembic import context
-import os, sys
-from dotenv import load_dotenv
-from src.models.db.user import User
-from src.models.db.account import Account
-from src.repository.base import Base
-from src.repository.database import async_db
 
+from src.repository.base import Base
+from src.models.db.user import User
+from src.config.manager import settings
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
 config = context.config
-config.set_main_option(name="sqlalchemy.url", value="postgresql://neondb_owner:XKriQqRP5AI9@ep-purple-voice-a5a158vv.us-east-2.aws.neon.tech/neondb")
+config.set_main_option(name="sqlalchemy.url", value=settings.DB_ASYNC_URL.replace("+asyncpg",""))
 
 # Interpret the config file for Python logging.
 # This line sets up loggers basically.
