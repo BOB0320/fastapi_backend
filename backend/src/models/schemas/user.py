@@ -39,16 +39,3 @@ class UserInResponse(BaseSchemaModel):
     last_login: Optional[datetime.datetime]
     created_at: datetime.datetime
     updated_at: Optional[datetime.datetime]
-    # id : int
-    # email: pydantic.EmailStr
-    # username: str
-    # first_name: str | None
-    # last_name: str | None
-    # roles: int
-    # auth_id: str
-    # is_onboarding: bool
-    # is_active: bool
-    # is_logged_in: bool
-    # last_login: datetime.date | None
-    # created_at: datetime.date
-    # updated_at: datetime.date | None
