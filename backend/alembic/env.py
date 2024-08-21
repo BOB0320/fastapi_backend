@@ -7,6 +7,7 @@ from alembic import context
 import os, sys
 from dotenv import load_dotenv
 from src.models.db.user import User
+from src.models.db.account import Account
 from src.repository.base import Base
 from src.repository.database import async_db
 
