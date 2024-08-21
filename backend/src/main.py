@@ -17,16 +17,6 @@ def initialize_backend_application() -> fastapi.FastAPI:
         allow_headers=settings.ALLOWED_HEADERS,
     )
 
-    # app.add_event_handler(
-    #     "startup",
-    #     execute_backend_server_event_handler(backend_app=app),
-    # )
-    # print("asdfasdf")
-    # app.add_event_handler(
-    #     "shutdown",
-    #     terminate_backend_server_event_handler(backend_app=app),
-    # )
-
     app.include_router(router=api_endpoint_router, prefix=settings.API_PREFIX)
 
     return app
