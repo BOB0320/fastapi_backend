@@ -15,10 +15,13 @@ class UserInCreate(BaseSchemaModel):
 
 
 class UserInUpdate(BaseSchemaModel):
-    username: str | None
-    email: str | None
-    password: str | None
-
+    username: Optional[str] = None
+    email: Optional[pydantic.EmailStr] = None
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None
+    roles: Optional[int] = None
+    is_onboarding: Optional[bool] = None
+    is_active: Optional[bool] = None
 
 class UserInLogin(BaseSchemaModel):
     username: str
