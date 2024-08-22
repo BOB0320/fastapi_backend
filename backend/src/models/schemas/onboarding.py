@@ -1,9 +1,18 @@
+from typing import List, Dict, Optional, Union
+
 from src.models.schemas.base import BaseSchemaModel
-from typing import List, Dict, Optional
 
 class AnswerItem(BaseSchemaModel):
+    questionNumber: int
     answer: List[str]
     answerType: int
+    
+    def to_dict(self) -> dict:
+        return {
+            "questionNumber": self.questionNumber,
+            "answer": self.answer,
+            "answerType": self.answerType
+        }
     
 class OnboardingRequest(BaseSchemaModel):
     items: List[AnswerItem]

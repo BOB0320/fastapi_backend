@@ -1,26 +1,28 @@
-import fastapi
-from fastapi import HTTPException
-from typing import Dict, List, Tuple
-from src.api.dependencies.repository import get_repository
-from src.models.schemas.onboarding import OnboardingRequest, OnboardingResponse, AnswerItem, OnboardingFeedback
-from src.repository.crud.onboarding import OnboardingCRUDRepository
+from fastapi import status, HTTPException, Depends, APIRouter
+from fastapi.responses import JSONResponse
+from sqlalchemy.exc import IntegrityError, NoResultFound
 
-router = fastapi.APIRouter(prefix="/onboarding", tags=["onboarding"])
+from src.api.dependencies.repository import get_repository
+from src.models.schemas.onboarding import OnboardingRequest, OnboardingResponse, OnboardingFeedback
+from src.repository.crud.onboarding import OnboardingCRUDRepository
+from src.utilities.onboarding.calculate_points import calculate_points
+from src.utilities.onboarding.calculate_percentage import calculate_percentage
+
+router = APIRouter(prefix="/onboarding", tags=["onboarding"])
 
 @router.post(
-    path="/submit-answers/", 
+    path="/submit-answers", 
     name="onboarding:create-onboarding",
     response_model=OnboardingResponse,
-    status_code=fastapi.status.HTTP_200_OK,
+    status_code=status.HTTP_200_OK,
 )
-async def create_onboarding(
+async def create_or_update_onboarding(
     onboarding_create: OnboardingRequest,
-    onboarding_repo: OnboardingCRUDRepository = 
-        fastapi.Depends(
-            get_repository(
-                repo_type=OnboardingCRUDRepository
-            )
-        ),
+    onboarding_repo: OnboardingCRUDRepository = Depends(
+        get_repository(
+            repo_type=OnboardingCRUDRepository
+        )
+    ),
   ) -> OnboardingResponse:
     try:
         # Calculate points and percentages
@@ -32,82 +34,45 @@ async def create_onboarding(
         onboarding_create.specificPersonality = percentage
 
         # Attempt to create onboarding
-        is_success = await onboarding_repo.create_onboarding(onboarding_create=onboarding_create)
-        
-        if not is_success:
-            raise HTTPException(
-                status_code=500, 
-                detail="Failed to create onboarding record"
-            )
-        
+        await onboarding_repo.create_or_update_onboarding(onboarding_create=onboarding_create)
+
         # Return successful response
         return OnboardingResponse(
             primaryPersonality=best_score,
             specificPersonality=percentage
         )
 
-    except Exception as e:
-        # Handle any unexpected exceptions
-        print("Error occurred during onboarding:", str(e))
-        raise HTTPException(
-            status_code=500, 
-            detail="An error occurred during onboarding"
-        )
+    except NoResultFound as e:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(e))
+    except SystemError as e:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
 
-# Function to calculate points
-def calculate_points(answers: List[AnswerItem]) -> Dict[str, int]:
-    points = {'A': 0, 'B': 0, 'C': 0, 'D': 0}
-    
-    for item in answers:
-        if item.answerType == 0:
-            for ans in item.answer:
-                points[ans] += 6
-        elif item.answerType == 1:
-            for ans in item.answer:
-                points[ans] += 3
-        elif item.answerType == 2:
-            points[item.answer[0]] += 4
-            points[item.answer[1]] += 2
-    
-    return points
-# Function to calculate the percent to choose the main profile of user
-def calculate_percentage(points: Dict[str, int]) -> Tuple[Dict[str, float], str]:
-    total_points = sum(points.values())
-    percentage = {
-        key: round((value / total_points) * 100, 1) 
-        if total_points > 0 else 0 
-        for key, value in points.items()
-    }
-    
-    # Find the answer with the highest score
-    best_score = max(points, key=points.get) if points else None
-    return percentage, best_score
+
 
 @router.post(
-    path="/save-feedback/",
+    path="/save-feedback",
     name="onboarding:save-feedback",
-    status_code=fastapi.status.HTTP_200_OK,
 )
 async def save_feedback(
     feedback_create: OnboardingFeedback,
-    onboarding_repo: OnboardingCRUDRepository = fastapi.Depends(
+    onboarding_repo: OnboardingCRUDRepository = Depends(
         get_repository(
             repo_type=OnboardingCRUDRepository
         )
     ), 
-) -> bool:
+) -> JSONResponse:
     try:
         # Save feedback using the repository
-        is_saved = await onboarding_repo.save_feedback(feedback_create)
-        if not is_saved:
-            raise HTTPException(
-                status_code=500, 
-                detail="Failed to save feedback"
-            )
-        return True
-    except Exception as e:
-        print("Error occurred during feedback saving:", str(e))
-        raise HTTPException(
-            status_code=500, 
-            detail="An error occurred while saving feedback"
+        await onboarding_repo.save_feedback(feedback_create)
+        return JSONResponse(
+            status_code=status.HTTP_200_OK,
+            content={"message": "Feedback saved successfully"}
         )
+    except NoResultFound as e:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(e))
+    except SystemError as e:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
