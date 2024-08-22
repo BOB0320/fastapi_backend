@@ -123,8 +123,23 @@ async def get_user(
     user_id: int,
     user_repo: UserCRUDRepository = Depends(get_repository(repo_type=UserCRUDRepository)),
 ) -> UserInResponse:
-    user = await user_repo.get_user_by_id(user_id=user_id)
-    if not user:
-        raise await http_404_exc_id_not_found_request(user_id=user_id)
-    
-    return UserInResponse(**user.dict())
+    try:
+        user: User = await user_repo.get_user_by_id(user_id=user_id)
+        return UserInResponse(
+            id=user.id,
+            email=user.email,
+            username=user.username,
+            first_name=user.first_name,
+            last_name=user.last_name,
+            auth_id=user.auth_id,
+            is_onboarding=user.is_onboarding,
+            is_active=user.is_active,
+            is_logged_in=user.is_logged_in,
+            last_login=user.last_login,
+            created_at=user.created_at,
+            updated_at=user.updated_at
+        )
+    except NoResultFound:
+        raise await http_404_exc_id_not_found_request(id=user_id)
+    except SystemError as e:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))

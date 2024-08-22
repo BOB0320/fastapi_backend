@@ -56,6 +56,21 @@ class UserCRUDRepository(BaseCRUDRepository):
         except Exception as e:
             await self.async_session.rollback()
             raise SystemError(f"An unexpected error occurred while deleting user with ID {user_id}.") from e
+        
+
+    async def get_user_by_id(self, user_id: int) -> User:
+        try:
+            stmt = sqlalchemy.select(User).where(User.id == user_id)
+            result = await self.async_session.execute(stmt)
+            user = result.scalar_one_or_none()
+            if user is None:
+                raise NoResultFound(f"User with ID {user_id} not found.")
+            return user
+        except NoResultFound:
+            raise NoResultFound(f"User with ID {user_id} not found.")
+        except Exception as e:
+            raise SystemError(f"An unexpected error occurred while fetching user with ID {user_id}.") from e
+
     async def is_email_taken(self, email: str) -> bool:
         email_stmt = sqlalchemy.select(User.email).select_from(User).where(User.email == email)
         email_query = await self.async_session.execute(email_stmt)
