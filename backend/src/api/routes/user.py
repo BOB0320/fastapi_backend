@@ -1,24 +1,25 @@
 import fastapi
 import pydantic
+from fastapi import status, HTTPException, Depends, APIRouter
+from sqlalchemy.exc import IntegrityError, NoResultFound
 
 from src.api.dependencies.repository import get_repository
-from src.models.schemas.user import UserInResponse, UserInCreate
+from src.models.schemas.user import UserInResponse, UserInCreate, UserInUpdate
 from src.models.db.user import User
 from src.repository.crud.user import UserCRUDRepository
 from src.utilities.exceptions.database import EmailAlreadyExists, UsernameAlreadyExists
 from src.utilities.exceptions.http.exc_404 import (
-    http_404_exc_email_not_found_request,
-    http_404_exc_id_not_found_request,
-    http_404_exc_username_not_found_request,
+    http_404_exc_id_not_found_request
 )
 from src.utilities.exceptions.http.exc_400 import (
-    http_exc_400_credentials_bad_signin_request,
-    http_exc_400_credentials_bad_signup_request,
     http_400_exc_bad_email_request,
     http_400_exc_bad_username_request
 )
+from src.utilities.exceptions.http.exc_409 import  (
+    http_409_exc_bad_user_collision_request
+)
 
-router = fastapi.APIRouter(prefix="/users", tags=["users"])
+router = APIRouter(prefix="/users", tags=["users"])
 
 @router.post(
     path="",
@@ -28,7 +29,7 @@ router = fastapi.APIRouter(prefix="/users", tags=["users"])
 )
 async def create_user(
     user_create: UserInCreate,
-    user_repo: UserCRUDRepository = fastapi.Depends(get_repository(repo_type=UserCRUDRepository)),
+    user_repo: UserCRUDRepository = Depends(get_repository(repo_type=UserCRUDRepository)),
 ) -> UserInResponse:
     try:
         await user_repo.is_email_taken(email=user_create.email)
@@ -55,3 +56,75 @@ async def create_user(
         updated_at=new_user.updated_at,
     )
 
+@router.put(
+    path="/{user_id}",
+    name="users:update-user",
+    response_model=UserInResponse,
+)
+async def update_user(
+    user_id: int,
+    user_update: UserInUpdate,
+    user_repo: UserCRUDRepository = Depends(get_repository(repo_type=UserCRUDRepository)),
+) -> UserInResponse:
+    try:
+        if user_update.email:
+            await user_repo.is_email_taken(email=user_update.email)
+        if user_update.username:
+            await user_repo.is_username_taken(username=user_update.username)
+        updated_user = await user_repo.update_user(user_id=user_id, user_update=user_update)
+    except EmailAlreadyExists:
+        raise await http_400_exc_bad_email_request(email=user_update.email)
+    except UsernameAlreadyExists:
+        raise await http_400_exc_bad_username_request(username=user_update.username)
+    except IntegrityError:
+        raise await http_409_exc_bad_user_collision_request(id=user_id)
+    
+    if not updated_user:
+        raise await http_404_exc_id_not_found_request(user_id=user_id)
+    return UserInResponse(
+        id=updated_user.id,
+        email=updated_user.email,
+        username=updated_user.username,
+        first_name=updated_user.first_name,
+        last_name=updated_user.last_name,
+        auth_id=updated_user.auth_id,
+        is_onboarding=updated_user.is_onboarding,
+        is_active=updated_user.is_active,
+        is_logged_in=updated_user.is_logged_in,
+        last_login=updated_user.last_login,
+        created_at=updated_user.created_at,
+        updated_at=updated_user.updated_at
+    )
+
+@router.delete(
+    path="/{user_id}",
+    name="users:delete-user",
+    status_code=fastapi.status.HTTP_204_NO_CONTENT,
+)
+async def delete_user(
+    user_id: int,
+    user_repo: UserCRUDRepository = Depends(get_repository(repo_type=UserCRUDRepository)),
+) -> None:
+    try:
+        await user_repo.delete_user(user_id=user_id)
+    except NoResultFound as e:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(e))
+    except SystemError as e:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
+
+@router.get(
+    path="/{user_id}",
+    name="users:get-user",
+    response_model=UserInResponse,
+)
+async def get_user(
+    user_id: int,
+    user_repo: UserCRUDRepository = Depends(get_repository(repo_type=UserCRUDRepository)),
+) -> UserInResponse:
+    user = await user_repo.get_user_by_id(user_id=user_id)
+    if not user:
+        raise await http_404_exc_id_not_found_request(user_id=user_id)
+    
+    return UserInResponse(**user.dict())

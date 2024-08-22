@@ -32,3 +32,6 @@ def http_404_username_details(username: str) -> str:
 
 def http_404_email_details(email: str) -> str:
     return f"Either the account with email `{email}` doesn't exist, has been deleted, or you are not authorized!"
+
+def http_409_user_collision_details(id: int) -> str:
+    return f"Updated user with id `{id}` collides with other users"
