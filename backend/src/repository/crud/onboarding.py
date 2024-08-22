@@ -40,22 +40,22 @@ class OnboardingCRUDRepository(BaseCRUDRepository):
                         )
                         session.add(new_onboarding)
                 
-                # Fetch the corresponding user record and update the onboarding status
-                result = await session.execute(
-                    select(User).where(User.id == onboarding_create.userId)
-                )
-                user = result.scalars().first()
-                
-                if user:
-                    user.is_onboarding = False
-                else:
-                    raise NoResultFound(f"User with ID not found.")
-                
-                # Commit the transaction if everything went well
-                await session.commit()
-                # Refresh the newly created onboarding record if it was created
-                if new_onboarding:
-                    await session.refresh(new_onboarding)
+                    # Fetch the corresponding user record and update the onboarding status
+                    result = await session.execute(
+                        select(User).where(User.id == onboarding_create.userId)
+                    )
+                    user = result.scalars().first()
+                    
+                    if user:
+                        user.is_onboarding = False
+                    else:
+                        raise NoResultFound(f"User with ID not found.")
+                    
+                    # Commit the transaction if everything went well
+                    await session.commit()
+                    # Refresh the newly created onboarding record if it was created
+                    if new_onboarding:
+                        await session.refresh(new_onboarding)
                                 
             except NoResultFound:
                 raise NoResultFound(f"User with ID not found.")
