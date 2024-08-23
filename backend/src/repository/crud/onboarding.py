@@ -22,7 +22,7 @@ class OnboardingCRUDRepository(BaseCRUDRepository):
                     existing_onboarding = result.scalars().first()
                     
                     items_list = list(onboarding_create.items)
-                    detailed_qa_list = [item.to_dict() for item in items_list]  # Convert to list of dicts
+                    detailed_qa_list = [item.__dict__ for item in items_list]  # Convert to list of dicts
                     detailed_qa_serialized = json.dumps(detailed_qa_list)  # Serialize to JSON
                     
                     if existing_onboarding:
@@ -85,6 +85,8 @@ class OnboardingCRUDRepository(BaseCRUDRepository):
                     else:
                         raise NoResultFound(f"User with ID not found.")
                     
+                    await session.commit()
+                    
                 except NoResultFound:
                     raise NoResultFound(f"User with ID not found.")
                 except ValueError as ve:
@@ -96,4 +98,3 @@ class OnboardingCRUDRepository(BaseCRUDRepository):
                     await session.rollback()
                     raise SystemError(f"Unexpected error during feedback save: {str(e)}")
                 
-            await session.commit()

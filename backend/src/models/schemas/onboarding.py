@@ -6,14 +6,7 @@ class AnswerItem(BaseSchemaModel):
     questionNumber: int
     answer: List[str]
     answerType: int
-    
-    def to_dict(self) -> dict:
-        return {
-            "questionNumber": self.questionNumber,
-            "answer": self.answer,
-            "answerType": self.answerType
-        }
-    
+        
 class OnboardingRequest(BaseSchemaModel):
     items: List[AnswerItem]
     userId: int
